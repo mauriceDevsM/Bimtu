@@ -17,17 +17,21 @@ import {
 	Stack,
 	Text,
 	Wrap,
+	useToast,
 } from "@chakra-ui/react";
 import { BiCheckShield, BiPackage, BiSupport } from "react-icons/bi";
 import { useDispatch, useSelector } from "react-redux";
 import { useParams } from "react-router-dom";
 import { getProduct } from "../redux/actions/productActions";
 import Star from "../components/Star";
+import { addCartItem } from "../redux/actions/cartActions";
 
 const ProductScreen = () => {
 	const [amount, setAmount] = useState(1);
 	const { id } = useParams();
 	const dispatch = useDispatch();
+	const toast = useToast();
+	const { cartItems } = useSelector((state) => state.cart);
 	const { loading, error, product } = useSelector((state) => state.product);
 
 	useEffect(() => {
@@ -41,6 +45,20 @@ const ProductScreen = () => {
 		if (input === "minus") {
 			setAmount(amount - 1);
 		}
+	};
+
+	const addItem = () => {
+		if (cartItems.some((cartItem) => cartItem.id === id)) {
+			cartItems.find((cartItem) => cartItem.id === id);
+			dispatch(addCartItem(id, amount));
+		} else {
+			dispatch(addCartItem(id, amount));
+		}
+		toast({
+			description: "Item has been added",
+			status: "success",
+			isClosable: true,
+		});
 	};
 
 	return (
@@ -111,12 +129,20 @@ const ProductScreen = () => {
 									<Badge fontSize='lg' width='170px' textAlign='center' colorScheme='gray'>
 										In Stock: {product.stock}
 									</Badge>
-									<Button variant='outline' isDisabled={product.stock === 0} colorScheme='cyan' onClick={() => {}}>
+									<Button
+										variant='outline'
+										isDisabled={product.stock === 0}
+										colorScheme='cyan'
+										onClick={() => addItem()}
+									>
 										Add to Cart
 									</Button>
 									<Stack width='270px'>
 										<Flex alignItems='center'>
 											<BiPackage size='20px' />
+											<Text fontWeight='medium' fontSize='sm' ml='2'>
+												Shipped within 2 to 3 days
+											</Text>
 										</Flex>
 										<Flex alignItems='center'>
 											<BiCheckShield size='20px' />
